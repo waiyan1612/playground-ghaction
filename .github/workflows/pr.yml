@@ -20,15 +20,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run generator (instance ${{ matrix.id }})
+      - name: Run generator {{ matrix.id }}
         run: |
           python scripts/generator.py > ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}.py
 
       - name: Upload output
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}
-          path: ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}.py
+          name: ${{ github.event.inputs['etl-id'] }}-variant{{ matrix.id }}
+          path: ${{ github.event.inputs['etl-id'] }}-variant{{ matrix.id }}.py
 
   score:
     needs: generate
