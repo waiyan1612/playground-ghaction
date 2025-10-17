@@ -1,0 +1,27 @@
+name: Deploy to staging
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 #v47.0.0
+        with:
+          json: true
+
+      - name: Deploy to staging
+        run: |
+          echo "Modified files: ${{ steps.changed.outputs.modified_files }}"
+          echo "Added files: ${{ steps.changed.outputs.added_files }}"
+          echo "Deleted files: ${{ steps.changed.outputs.deleted_files }}"
