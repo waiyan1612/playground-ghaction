@@ -42,7 +42,7 @@ jobs:
       - name: Download codes
         uses: actions/download-artifact@v4
         with:
-          path: code/
+          path: tmp/code/
 
       - name: Download test files
         run: |
@@ -50,9 +50,9 @@ jobs:
 
       - name: Run tests and pick best candidate
         run: |
-          # Expect test.py to produce a best.txt
+          # Expect test.py to produce a tmp/best.txt
           python scripts/run_tests.py
-          echo "best=$(cat best.txt)" >> $GITHUB_OUTPUT
+          echo "$(cat tmp/best.txt)" >> $GITHUB_OUTPUT
 
   commit:
     needs: score
