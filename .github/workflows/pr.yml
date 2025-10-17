@@ -1,0 +1,85 @@
+name: Generate code and create pull request
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      etl-id:
+        description: 'Id of ETL process'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [1, 2]
+      max-parallel: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run script.py (instance ${{ matrix.id }})
+        run: |
+          python generator.py > ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}.py
+
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}
+          path: ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}.py
+
+  score:
+    needs: generate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download codes
+        uses: actions/download-artifact@v4
+        with:
+          path: code/
+
+      - name: Download test files
+        run: |
+          python scripts/setup_tests.py
+
+      - name: Run tests and pick best candidate
+        run: |
+          # Expect test.py to produce a best.txt
+          python scripts/run_tests.py
+          echo "best=$(cat best.txt)" >> $GITHUB_OUTPUT
+
+  commit:
+    needs: score
+    runs-on: ubuntu-latest
+    steps:
+      - name: Commit to repo
+        run: |
+          BEST_PATH="${{ needs.score.outputs.best }}"
+          echo $BEST_PATH
+          BASE_NAME=$(basename "$FILE_PATH")
+          NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
+
+          BASE_BRANCH="${{ github.event.inputs['etl-id'] }}"
+          COMMIT_BRANCH="$BASE_BRANCH"
+          COUNTER=2
+          
+          # Loop until we find a branch name that doesn't exist on the remote
+          while git ls-remote --exit-code --heads origin "$COMMIT_BRANCH" > /dev/null; do
+            COMMIT_BRANCH="${BASE_BRANCH}-$COUNTER"
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          # Fail if branch already exists since there seems to be an unexpected race condition
+          git checkout -b $COMMIT_BRANCH
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $NEW_BEST_PATH
+          git commit -m "Add $NEW_BEST_PATH"
+          git push origin $COMMIT_BRANCH
