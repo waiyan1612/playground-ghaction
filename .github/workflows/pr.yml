@@ -14,21 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        variant: [1, 2]
+        variant: [variant1, variant2]
       max-parallel: 5
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run generator {{ matrix.id }}
+      - name: Run generator {{ matrix.variant }}
         run: |
-          python scripts/generator.py > ${{ github.event.inputs['etl-id'] }}-variant${{ matrix.id }}.py
+          python scripts/generator.py > ${{ github.event.inputs['etl-id'] }}-${{ matrix.variant }}.py
 
       - name: Upload output
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs['etl-id'] }}-variant{{ matrix.id }}
-          path: ${{ github.event.inputs['etl-id'] }}-variant{{ matrix.id }}.py
+          name: ${{ github.event.inputs['etl-id'] }}-{{ matrix.variant }}
+          path: ${{ github.event.inputs['etl-id'] }}-{{ matrix.variant }}.py
 
   score:
     needs: generate
