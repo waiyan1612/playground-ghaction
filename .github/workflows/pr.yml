@@ -1,6 +1,5 @@
 name: Generate code and create pull request
 on:
-  push:
   workflow_dispatch:
     inputs:
       etl-id:
