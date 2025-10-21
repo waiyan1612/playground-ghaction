@@ -63,6 +63,8 @@ jobs:
     needs: score
     runs-on: ubuntu-latest
     steps:
+      - run: echo '${{ toJSON(needs.score.outputs) }}'
+      
       - name: Commit to repo
         run: |
           BEST_PATH="${{ needs.score.outputs.best }}"
