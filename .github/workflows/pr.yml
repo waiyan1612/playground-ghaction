@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs['run-prefix'] }}
-          path: ${{ github.event.inputs['run-prefix'] }}.py
+          path: artifacts/${{ github.event.inputs['run-prefix'] }}.py
           retention-days: 7
 
   commit:
