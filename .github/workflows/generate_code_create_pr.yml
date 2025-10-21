@@ -54,12 +54,22 @@ jobs:
       - name: Download test files
         run: python scripts/setup_tests.py
 
-      - name: Run tests and select best candidate
-        run: python scripts/run_tests.py
+      - name: Run tests and select best variant
+        id: test
+        run: |
+          python scripts/run_tests.py
+          echo "selected=$(cat selected.txt)" >> $GITHUB_OUTPUT
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat test_results.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          cat test_results.md >> $GITHUB_STEP_SUMMARY
 
       # For testing purposes
       # - name: Force fail
       #   run: exit 1
+
+      - name: Rename best variant
+        run: mv ${{ steps.test.outputs.best }} ./artifacts/${{ github.event.inputs['run-prefix'] }}.py
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
