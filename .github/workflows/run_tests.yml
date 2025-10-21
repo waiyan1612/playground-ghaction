@@ -17,12 +17,21 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 #v47.0.0
+        with:
+          json: true
+
       - name: Download test files
         run: python scripts/setup_tests.py
 
       - name: Run tests
         id: test
         run: |
+          echo "Modified files: ${{ steps.changed.outputs.modified_files }}"
+          echo "Added files: ${{ steps.changed.outputs.added_files }}"
+          echo "Deleted files: ${{ steps.changed.outputs.deleted_files }}"
           python scripts/run_tests.py
           { echo 'results<<EOF'; cat test_results.md; echo 'EOF'; } >> "$GITHUB_OUTPUT"
 
