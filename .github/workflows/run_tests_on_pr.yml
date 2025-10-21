@@ -1,0 +1,31 @@
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      test-results: ${{ steps.test.outputs.results }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download test files
+        run: python scripts/setup_tests.py
+
+      - name: Run tests
+        id: test
+        run: |
+          python scripts/run_tests.py
+          { echo 'results<<EOF'; cat test_results.md; echo 'EOF'; } >> "$GITHUB_OUTPUT"
+
+      - name: Comment results
+        # e8674b075228eee787fea43ef493e45ece1004c9 is the SHA of v5.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.test.outputs.results }}
