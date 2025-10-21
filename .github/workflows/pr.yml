@@ -42,7 +42,7 @@ jobs:
       - name: Download codes
         uses: actions/download-artifact@v4
         with:
-          path: tmp/code/
+          path: artifacts/
 
       - name: Download test files
         run: |
