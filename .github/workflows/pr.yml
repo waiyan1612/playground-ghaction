@@ -24,7 +24,7 @@ jobs:
         run: |
           python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
-      - name: Upload code variants
+      - name: Upload all variants
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}
@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download code variants
+      - name: Download all variants
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
@@ -76,15 +76,8 @@ jobs:
       - name: Download best variant
         uses: actions/download-artifact@v4
         with:
+          name: ${{ github.event.inputs['run-prefix'] }}
           path: artifacts/
-          merge-multiple: true
-
-      - name: Commit to repo
-        run: |
-          BEST_PATH="${{ needs.score.outputs.best }}"
-          echo $BEST_PATH
-          # BASE_NAME=$(basename "$FILE_PATH")
-          # NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
 
       - name: Create Pull Request
         # 271a8d0340265f705b14b6d32b9829c1cb33d45e is the SHA of v7.0.8 
