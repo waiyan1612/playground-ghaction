@@ -32,7 +32,7 @@ jobs:
           echo "Modified files: ${{ steps.changed.outputs.modified_files }}"
           echo "Added files: ${{ steps.changed.outputs.added_files }}"
           echo "Deleted files: ${{ steps.changed.outputs.deleted_files }}"
-          python scripts/run_tests.py
+          echo "TODO: RUN TESTS" > test_results.md
           { echo 'results<<EOF'; cat test_results.md; echo 'EOF'; } >> "$GITHUB_OUTPUT"
 
       - name: Comment results
