@@ -2,8 +2,8 @@ name: Generate code and create pull request
 on:
   workflow_dispatch:
     inputs:
-      etl-id:
-        description: 'Id of ETL process'
+      run-prefix:
+        description: 'Run prefix {report_id}_{version}'
         required: true
 
 permissions:
@@ -22,17 +22,20 @@ jobs:
 
       - name: Run generator ${{ matrix.variant }}
         run: |
-          python scripts/generator.py > ${{ github.event.inputs['etl-id'] }}-${{ matrix.variant }}.py
+          python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
       - name: Upload output
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs['etl-id'] }}-${{ matrix.variant }}
-          path: ${{ github.event.inputs['etl-id'] }}-${{ matrix.variant }}.py
+          name: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}
+          path: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
+          retention-days: 7
 
   score:
     needs: generate
     runs-on: ubuntu-latest
+    outputs:
+      best: ${{ steps.select.outputs.best }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -49,9 +52,10 @@ jobs:
         run: |
           python scripts/setup_tests.py
 
-      - name: Run tests and pick best candidate
+      - name: Run tests and select best candidate
+        id: select
         run: |
-          # Expect test.py to produce a ./best.txt
+          # Expect test.py to produce a ./best.txt with contents `best=xxx.py`
           python scripts/run_tests.py
           echo "$(cat best.txt)" >> $GITHUB_OUTPUT
 
@@ -66,7 +70,7 @@ jobs:
           BASE_NAME=$(basename "$FILE_PATH")
           NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
 
-          BASE_BRANCH="${{ github.event.inputs['etl-id'] }}"
+          BASE_BRANCH="${{ github.event.inputs['run-prefix'] }}"
           COMMIT_BRANCH="$BASE_BRANCH"
           COUNTER=2
           
