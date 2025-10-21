@@ -1,7 +1,12 @@
+name: Run tests on pull requests
 on:
   pull_request:
     branches:
       - main
+    types:
+      - opened        # when PR is first created
+      - reopened      # when PR is reopened
+      - synchronize   # when new commits are pushed to the PR
 
 jobs:
   test:
