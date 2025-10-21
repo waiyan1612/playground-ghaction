@@ -20,11 +20,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run generator ${{ matrix.variant }}
+      - name: Run generator for ${{ matrix.variant }}
         run: |
           python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
-      - name: Upload output
+      - name: Upload code artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}
@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download codes
+      - name: Download code artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
@@ -57,7 +57,10 @@ jobs:
         run: |
           # Expect test.py to produce a ./best.txt with contents `best=xxx.py`
           python scripts/run_tests.py
-          echo "$(cat best.txt)" >> $GITHUB_OUTPUT
+          echo "$(cat best.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Check GH Output
+        run: echo ${{ toJSON(steps.select.outputs) }}
 
   commit:
     needs: score
