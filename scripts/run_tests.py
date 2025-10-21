@@ -11,5 +11,8 @@ code_files = [
 
 print(f"Choosing best variant from {code_files}")
 best = code_files[1]
+print(f"Selected: {best}")
+
 with open(os.environ["GITHUB_OUTPUT"], "a") as f:
     f.write(f"best={best}\n")
+print("$GITHUB_OUTPUT", os.environ["GITHUB_OUTPUT"])
