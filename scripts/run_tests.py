@@ -12,6 +12,3 @@ selected = os.path.join("./artifacts", code_files[1])
 best = re.sub(r'-variant\d+(?=\.py$)', '', selected)
 shutil.copy(selected, best)
 print(f"Promoted {selected} to {best}")
-
-with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-    f.write(f"best={best}\n")
