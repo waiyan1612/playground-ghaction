@@ -26,8 +26,8 @@ jobs:
         run: python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
       # For testing purposes
-      - name: Force fail
-        run: exit 1
+      # - name: Force fail
+      #   run: exit 1
 
       - name: Upload all variants
         uses: actions/upload-artifact@v4
@@ -58,8 +58,8 @@ jobs:
         run: python scripts/run_tests.py
 
       # For testing purposes
-      - name: Force fail
-        run: exit 1
+      # - name: Force fail
+      #   run: exit 1
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
@@ -72,7 +72,7 @@ jobs:
     needs: score
     runs-on: ubuntu-latest
     outputs:
-      pull-request-url: ${{ steps.cpr.outputs.pull-request-url }}
+      url: ${{ steps.cpr.outputs.pull-request-url }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -105,4 +105,4 @@ jobs:
     steps:
       - name: Notify the initiator
         # This will be empty if previous job failed
-        run: echo "Pull Request URL - ${{ needs.create-pull-request.pull-request-url }}"
+        run: echo "Pull Request URL is ${{ needs.create-pull-request.url }}"
