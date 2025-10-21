@@ -58,13 +58,13 @@ jobs:
           python scripts/run_tests.py
 
       - name: Check GH Output
-        run: echo ${{ toJSON(steps.select.outputs) }}
+        run: echo "${{ toJSON(steps.select.outputs) }}"
 
   commit:
     needs: score
     runs-on: ubuntu-latest
     steps:
-      - run: echo '${{ toJSON(needs.score.outputs) }}'
+      - run: echo "${{ toJSON(needs.score.outputs) }}"
       
       - name: Commit to repo
         run: |
