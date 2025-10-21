@@ -25,6 +25,10 @@ jobs:
       - name: Run generator for ${{ matrix.variant }}
         run: python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
+      # For testing purposes
+      - name: Force fail
+        run: exit 1
+
       - name: Upload all variants
         uses: actions/upload-artifact@v4
         with:
@@ -52,6 +56,10 @@ jobs:
 
       - name: Run tests and select best candidate
         run: python scripts/run_tests.py
+
+      # For testing purposes
+      - name: Force fail
+        run: exit 1
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
@@ -90,11 +98,11 @@ jobs:
           body: Add ${{ github.event.inputs['run-prefix'] }}.py
           draft: false
 
-  inform:
-    needs: create-pull-request
+  notify:
+    needs: [generate, score, create-pull-request]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Inform the initiator
+      - name: Notify the initiator
         # This will be empty if previous job failed
         run: echo "Pull Request URL - ${{ needs.create-pull-request.pull-request-url }}"
