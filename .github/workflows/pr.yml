@@ -57,36 +57,49 @@ jobs:
           # Expect run_tests.py to append `best=xxx.py` to $GITHUB_OUTPUT
           python scripts/run_tests.py
 
-      - name: Check GH Output
-        run: echo "${{ toJSON(steps.select.outputs) }}"
-
   commit:
     needs: score
     runs-on: ubuntu-latest
     steps:
-      - run: echo "${{ toJSON(needs.score.outputs) }}"
-      
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Commit to repo
         run: |
           BEST_PATH="${{ needs.score.outputs.best }}"
           echo $BEST_PATH
-          BASE_NAME=$(basename "$FILE_PATH")
-          NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
+          # BASE_NAME=$(basename "$FILE_PATH")
+          # NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
 
-          BASE_BRANCH="${{ github.event.inputs['run-prefix'] }}"
-          COMMIT_BRANCH="$BASE_BRANCH"
-          COUNTER=2
+      # - name: Create Pull Request
+      #   # 271a8d0340265f705b14b6d32b9829c1cb33d45e is the SHA of v7.0.8 
+      #   uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+      #   with:
+      #     commit-message: Add ${{ needs.score.outputs.best }}
+        
+      # - name: Commit to repo
+      #   run: |
+      #     BEST_PATH="${{ needs.score.outputs.best }}"
+      #     echo $BEST_PATH
+      #     BASE_NAME=$(basename "$FILE_PATH")
+      #     NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
+
+      #     BASE_BRANCH="${{ github.event.inputs['run-prefix'] }}"
+      #     COMMIT_BRANCH="$BASE_BRANCH"
+      #     COUNTER=2
           
-          # Loop until we find a branch name that doesn't exist on the remote
-          while git ls-remote --exit-code --heads origin "$COMMIT_BRANCH" > /dev/null; do
-            COMMIT_BRANCH="${BASE_BRANCH}-$COUNTER"
-            COUNTER=$((COUNTER + 1))
-          done
+      #     # Loop until we find a branch name that doesn't exist on the remote
+      #     while git ls-remote --exit-code --heads origin "$COMMIT_BRANCH" > /dev/null; do
+      #       COMMIT_BRANCH="${BASE_BRANCH}-$COUNTER"
+      #       COUNTER=$((COUNTER + 1))
+      #     done
           
-          # Fail if branch already exists since there seems to be an unexpected race condition
-          git checkout -b $COMMIT_BRANCH
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $NEW_BEST_PATH
-          git commit -m "Add $NEW_BEST_PATH"
-          git push origin $COMMIT_BRANCH
+      #     # Fail if branch already exists since there seems to be an unexpected race condition
+      #     git checkout -b $COMMIT_BRANCH
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git add $NEW_BEST_PATH
+      #     git commit -m "Add $NEW_BEST_PATH"
+      #     git push origin $COMMIT_BRANCH
