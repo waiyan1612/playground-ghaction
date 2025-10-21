@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Run generator for ${{ matrix.variant }}
-        run: python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
+        run: python scripts/generator.py > "${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py"
 
       # For testing purposes
       # - name: Force fail
@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}
-          path: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
+          path: "${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py"
           retention-days: 7
 
   score:
@@ -70,13 +70,13 @@ jobs:
       #   run: exit 1
 
       - name: Rename file
-        run: mv ${{ steps.test.outputs.selected }} ./artifacts/${{ github.event.inputs['run-prefix'] }}.py
+        run: mv "${{ steps.test.outputs.selected }}" "./artifacts/${{ github.event.inputs['run-prefix'] }}.py"
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs['run-prefix'] }}
-          path: artifacts/${{ github.event.inputs['run-prefix'] }}.py
+          path: "artifacts/${{ github.event.inputs['run-prefix'] }}.py"
           retention-days: 7
 
   create-pull-request:
@@ -101,7 +101,7 @@ jobs:
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e #v7.0.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: artifacts/${{ github.event.inputs['run-prefix'] }}.py
+          add-paths: "artifacts/${{ github.event.inputs['run-prefix'] }}.py"
           commit-message: Add ${{ github.event.inputs['run-prefix'] }}.py
           branch: ${{ github.event.inputs['run-prefix'] }}
           title: Add ${{ github.event.inputs['run-prefix'] }}
