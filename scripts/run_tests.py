@@ -15,4 +15,3 @@ print(f"Selected: {best}")
 
 with open(os.environ["GITHUB_OUTPUT"], "a") as f:
     f.write(f"best={best}\n")
-print("$GITHUB_OUTPUT", os.environ["GITHUB_OUTPUT"])
