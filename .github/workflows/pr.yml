@@ -1,9 +1,9 @@
-name: Generate code and create pull request
+name: Code Generation
 on:
   workflow_dispatch:
     inputs:
       run-prefix:
-        description: 'Run prefix {report_id}_{version}'
+        description: 'Run prefix {report_id}-{version}'
         required: true
 
 permissions:
@@ -55,9 +55,9 @@ jobs:
       - name: Run tests and select best candidate
         id: select
         run: |
-          # Expect test.py to produce a ./best.txt with contents `best=xxx.py`
+          # Expect run_tests.py to append `best=xxx.py` to $GITHUB_OUTPUT
           python scripts/run_tests.py
-          echo "$(cat best.txt)" >> "$GITHUB_OUTPUT"
+          echo "best2=best-best.py" >> "$GITHUB_OUTPUT"
 
       - name: Check GH Output
         run: echo ${{ toJSON(steps.select.outputs) }}
