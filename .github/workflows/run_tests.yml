@@ -1,4 +1,4 @@
-name: Run tests on pull requests
+name: Run tests
 on:
   pull_request:
     branches:
@@ -11,8 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    outputs:
-      test-results: ${{ steps.test.outputs.results }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -29,8 +27,7 @@ jobs:
           { echo 'results<<EOF'; cat test_results.md; echo 'EOF'; } >> "$GITHUB_OUTPUT"
 
       - name: Comment results
-        # e8674b075228eee787fea43ef493e45ece1004c9 is the SHA of v5.0.0
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 #v5.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.test.outputs.results }}
