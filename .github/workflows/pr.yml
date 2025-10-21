@@ -64,10 +64,10 @@ jobs:
     needs: score
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Checkout repo
+      #   uses: actions/checkout@v5
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download best variant
         uses: actions/download-artifact@v5
@@ -89,31 +89,7 @@ jobs:
           body: Add ${{ github.event.inputs['run-prefix'] }}.py
           draft: false
 
-      - name: Show Pull Request URL
+      - name: Inform the initiator
         if: ${{ steps.cpr.outputs.pull-request-number }}
         run: echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-        
-      # - name: Commit to repo
-      #   run: |
-      #     BEST_PATH="${{ needs.score.outputs.best }}"
-      #     echo $BEST_PATH
-      #     BASE_NAME=$(basename "$FILE_PATH")
-      #     NEW_BEST_PATH="${BASE_NAME%-variant*}.py"
 
-      #     BASE_BRANCH="${{ github.event.inputs['run-prefix'] }}"
-      #     COMMIT_BRANCH="$BASE_BRANCH"
-      #     COUNTER=2
-          
-      #     # Loop until we find a branch name that doesn't exist on the remote
-      #     while git ls-remote --exit-code --heads origin "$COMMIT_BRANCH" > /dev/null; do
-      #       COMMIT_BRANCH="${BASE_BRANCH}-$COUNTER"
-      #       COUNTER=$((COUNTER + 1))
-      #     done
-          
-      #     # Fail if branch already exists since there seems to be an unexpected race condition
-      #     git checkout -b $COMMIT_BRANCH
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      #     git add $NEW_BEST_PATH
-      #     git commit -m "Add $NEW_BEST_PATH"
-      #     git push origin $COMMIT_BRANCH
