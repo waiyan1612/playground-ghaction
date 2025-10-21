@@ -72,7 +72,7 @@ jobs:
     needs: score
     runs-on: ubuntu-latest
     outputs:
-      url: ${{ steps.cpr.outputs.pull-request-url }}
+      pull-request-url: ${{ steps.cpr.outputs.pull-request-url }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -85,7 +85,7 @@ jobs:
           name: ${{ github.event.inputs['run-prefix'] }}
           path: artifacts/
 
-      - name: Create Pull Request
+      - name: Create pull request
         id: cpr
         # 271a8d0340265f705b14b6d32b9829c1cb33d45e is the SHA of v7.0.8 
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
@@ -110,4 +110,4 @@ jobs:
     steps:
       - name: Notify the initiator
         # This will be empty if previous job failed
-        run: echo "Pull Request URL is ${{ needs.create-pull-request.url }}"
+        run: echo "Pull Request URL is ${{ needs.create-pull-request.outputs.pull-request-url }}"
