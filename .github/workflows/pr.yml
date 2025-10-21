@@ -49,15 +49,13 @@ jobs:
           merge-multiple: true
 
       - name: Download test files
-        run: |
-          python scripts/setup_tests.py
+        run: python scripts/setup_tests.py
 
       - name: Run tests and select best candidate
         id: select
         run: |
           # Expect run_tests.py to append `best=xxx.py` to $GITHUB_OUTPUT
           python scripts/run_tests.py
-          echo "best2=best-best.py" >> "$GITHUB_OUTPUT"
 
       - name: Check GH Output
         run: echo ${{ toJSON(steps.select.outputs) }}
