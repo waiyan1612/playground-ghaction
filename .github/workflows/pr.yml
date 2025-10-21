@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   generate:
@@ -21,8 +22,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Run generator for ${{ matrix.variant }}
-        run: |
-          python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
+        run: python scripts/generator.py > ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py
 
       - name: Upload all variants
         uses: actions/upload-artifact@v4
@@ -34,8 +34,6 @@ jobs:
   score:
     needs: generate
     runs-on: ubuntu-latest
-    outputs:
-      best: ${{ steps.select.outputs.best }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -52,10 +50,7 @@ jobs:
         run: python scripts/setup_tests.py
 
       - name: Run tests and select best candidate
-        id: select
-        run: |
-          # Expect run_tests.py to append `best=xxx.py` to $GITHUB_OUTPUT
-          python scripts/run_tests.py
+        run: python scripts/run_tests.py
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
@@ -80,11 +75,12 @@ jobs:
           path: artifacts/
 
       - name: Create Pull Request
+        id: cpr
         # 271a8d0340265f705b14b6d32b9829c1cb33d45e is the SHA of v7.0.8 
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: artifacts/
+          add-paths: artifacts/${{ github.event.inputs['run-prefix'] }}.py
           commit-message: Add ${{ github.event.inputs['run-prefix'] }}.py
           branch: ${{ github.event.inputs['run-prefix'] }}
           branch-suffix: timestamp
@@ -92,6 +88,10 @@ jobs:
           body: Add ${{ github.event.inputs['run-prefix'] }}.py
           draft: false
 
+      - name: Show Pull Request URL
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        run: echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+        
       # - name: Commit to repo
       #   run: |
       #     BEST_PATH="${{ needs.score.outputs.best }}"
