@@ -51,9 +51,9 @@ jobs:
 
       - name: Run tests and pick best candidate
         run: |
-          # Expect test.py to produce a tmp/best.txt
+          # Expect test.py to produce a ./best.txt
           python scripts/run_tests.py
-          echo "$(cat tmp/best.txt)" >> $GITHUB_OUTPUT
+          echo "$(cat best.txt)" >> $GITHUB_OUTPUT
 
   commit:
     needs: score
