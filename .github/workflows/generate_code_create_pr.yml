@@ -63,6 +63,8 @@ jobs:
   create-pull-request:
     needs: score
     runs-on: ubuntu-latest
+    outputs:
+      pull-request-url: ${{ steps.cpr.outputs.pull-request-url }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -88,6 +90,11 @@ jobs:
           body: Add ${{ github.event.inputs['run-prefix'] }}.py
           draft: false
 
+  inform:
+    needs: create-pull-request
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
       - name: Inform the initiator
-        if: ${{ steps.cpr.outputs.pull-request-number }}
-        run: echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+        # This will be empty if previous job failed
+        run: echo "Pull Request URL - ${{ needs.create-pull-request.pull-request-url }}"
