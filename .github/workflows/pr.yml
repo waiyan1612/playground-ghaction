@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run-prefix:
-        description: 'Run prefix {report_id}-{version}'
+        description: 'Run prefix: {report_id}-{version}'
         required: true
 
 permissions:
@@ -64,16 +64,16 @@ jobs:
     needs: score
     runs-on: ubuntu-latest
     steps:
-      # - name: Checkout repo
-      #   uses: actions/checkout@v5
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Download best variant
         uses: actions/download-artifact@v5
         with:
           name: ${{ github.event.inputs['run-prefix'] }}
           path: artifacts/
+
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Pull Request
         id: cpr
@@ -92,4 +92,3 @@ jobs:
       - name: Inform the initiator
         if: ${{ steps.cpr.outputs.pull-request-number }}
         run: echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
