@@ -68,8 +68,8 @@ jobs:
       # - name: Force fail
       #   run: exit 1
 
-      - name: Rename best variant
-        run: mv ${{ steps.test.outputs.best }} ./artifacts/${{ github.event.inputs['run-prefix'] }}.py
+      - name: Rename file
+        run: mv ${{ steps.test.outputs.selected }} ./artifacts/${{ github.event.inputs['run-prefix'] }}.py
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
