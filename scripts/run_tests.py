@@ -1,16 +1,15 @@
 import os
 
 print("Running test cases")
-code_dir = os.path.join(os.path.dirname(__file__), "../code")
-base = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+artifact_dir = os.path.join(os.path.dirname(__file__), "../artifacts")
 
-files = [
-    os.path.relpath(os.path.join(code_dir, f), start=base)
-    for f in os.listdir(code_dir)
-    if os.path.isfile(os.path.join(code_dir, f))
+code_files = [
+    f
+    for f in os.listdir(artifact_dir)
+    if os.path.isfile(os.path.join(artifact_dir, f))
 ]
-print(files)
+print(code_files)
 
 print("Choosing best candidate")
 with open("best.txt", "w"):
-  print(f"best={files[1]}")
+  print(f"best={code_files[1]}")
