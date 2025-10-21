@@ -1,4 +1,4 @@
-name: Code Generation
+name: Generate code & create pull request
 on:
   workflow_dispatch:
     inputs:
@@ -60,7 +60,7 @@ jobs:
           path: artifacts/${{ github.event.inputs['run-prefix'] }}.py
           retention-days: 7
 
-  commit:
+  create-pull-request:
     needs: score
     runs-on: ubuntu-latest
     steps:
@@ -84,7 +84,6 @@ jobs:
           add-paths: artifacts/${{ github.event.inputs['run-prefix'] }}.py
           commit-message: Add ${{ github.event.inputs['run-prefix'] }}.py
           branch: ${{ github.event.inputs['run-prefix'] }}
-          branch-suffix: timestamp
           title: Add ${{ github.event.inputs['run-prefix'] }}
           body: Add ${{ github.event.inputs['run-prefix'] }}.py
           draft: false
