@@ -95,7 +95,9 @@ jobs:
           commit-message: Add ${{ github.event.inputs['run-prefix'] }}.py
           branch: ${{ github.event.inputs['run-prefix'] }}
           title: Add ${{ github.event.inputs['run-prefix'] }}
-          body: Add ${{ github.event.inputs['run-prefix'] }}.py
+          body: | 
+            Add ${{ github.event.inputs['run-prefix'] }}.py
+            - See [workflow summary](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           draft: false
 
       - name: Check outputs
