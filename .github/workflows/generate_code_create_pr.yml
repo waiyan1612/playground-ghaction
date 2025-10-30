@@ -2,38 +2,44 @@ name: Generate code & create pull request
 on:
   workflow_dispatch:
     inputs:
-      run-prefix:
-        description: 'Run prefix: {report_id}-{version}'
+      report_id:
+        description: 'Business partner report ID'
         required: true
+      report_version:
+        description: 'Business partner report version'
+        required: true
+      dispatched_at:
+          description: 'Dispatch timestamp in yyyyMMdd_HHmm'
+          required: true
 
 permissions:
   contents: write
-  # Also requires Actions permissions (https://github.com/waiyan1612/playground-ghaction/settings/actions) to "Allow GitHub Actions to create and approve pull requests"
   pull-requests: write
+
+env:
+  REPORT_ID: "${{ github.event.inputs['report_id'] }}-${{ github.event.inputs['report_version'] }}"
+  DISPATCH_ID: "${{ github.event.inputs['report_id'] }}-${{ github.event.inputs['report_version'] }}-${{ github.event.inputs['dispatched_at'] }}"
 
 jobs:
   generate:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        variant: [variant1, variant2]
+        variant: [variant1]
+#        variant: [variant1, variant2, variant3, variant4, variant5]
       max-parallel: 5
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
 
       - name: Run generator for ${{ matrix.variant }}
-        run: python scripts/generator.py > "${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py"
-
-      # For testing purposes
-      # - name: Force fail
-      #   run: exit 1
+        run: python scripts/generator.py > "$DISPATCH_ID-${{ matrix.variant }}.py"
 
       - name: Upload all variants
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}
-          path: "${{ github.event.inputs['run-prefix'] }}-${{ matrix.variant }}.py"
+          name: ${{ env.DISPATCH_ID }}-${{ matrix.variant }}
+          path: "${{ env.DISPATCH_ID }}-${{ matrix.variant }}.py"
           retention-days: 7
 
   score:
@@ -65,18 +71,14 @@ jobs:
           # Optional show results in Github step summary.
           # cat test_results.md >> $GITHUB_STEP_SUMMARY
 
-      # For testing purposes
-      # - name: Force fail
-      #   run: exit 1
-
       - name: Rename file
-        run: mv "${{ steps.test.outputs.selected }}" "./artifacts/${{ github.event.inputs['run-prefix'] }}.py"
+        run: mv "${{ steps.test.outputs.selected }}" "./artifacts/$REPORT_ID.py"
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs['run-prefix'] }}
-          path: "artifacts/${{ github.event.inputs['run-prefix'] }}.py"
+          name: ${{ env.REPORT_ID }}
+          path: "artifacts/${{ env.REPORT_ID }}.py"
           retention-days: 7
 
   create-pull-request:
@@ -93,20 +95,20 @@ jobs:
       - name: Download best variant
         uses: actions/download-artifact@v5
         with:
-          name: ${{ github.event.inputs['run-prefix'] }}
-          path: artifacts/
+          name: ${{ env.REPORT_ID }}
+          path: scaffold/
 
       - name: Create pull request
         id: cpr
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e #v7.0.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          add-paths: "artifacts/${{ github.event.inputs['run-prefix'] }}.py"
-          commit-message: Add ${{ github.event.inputs['run-prefix'] }}.py
-          branch: ${{ github.event.inputs['run-prefix'] }}
-          title: Add ${{ github.event.inputs['run-prefix'] }}
+          add-paths: scaffold/${{ env.REPORT_ID }}.py
+          commit-message: Add ${{env.REPORT_ID}}.py
+          branch: ${{env.DISPATCH_ID}}
+          title: Add ${{env.REPORT_ID}}
           body: | 
-            Add ${{ github.event.inputs['run-prefix'] }}.py
+            Add ${{env.REPORT_ID}}.py
             ---
             ${{ needs.score.outputs.test-results }}"
             ---
