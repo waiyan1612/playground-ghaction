@@ -1,6 +1,6 @@
 # Playground for Github actions
 
-Personal collection of GitHub workflows for DevOps stuff.
+Personal collection of GitHub workflows for DevOps stuff. 
 
 | 🧩 **Workflow** | ⚡ **Trigger** | 🧠 **What It Does** |
 |-----------------|----------------|----------------------|
