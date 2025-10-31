@@ -3,10 +3,12 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - 'scaffold/**'
     types:
-      - opened        # when PR is first created
-      - reopened      # when PR is reopened
-      - synchronize   # when new commits are pushed to the PR
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   # Also requires Actions permissions (https://github.com/waiyan1612/playground-ghaction/settings/actions) to "Allow GitHub Actions to create and approve pull requests"

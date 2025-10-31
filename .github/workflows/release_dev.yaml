@@ -1,0 +1,61 @@
+name: Release Code (Dev)
+
+on:
+  issue_comment:
+    types: [created]
+
+env:
+  ARTIFACT_BASE_URL: s3://bucket_dev
+
+jobs:
+  release:
+    if: github.event.issue.pull_request && github.event.comment.body == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get pull request
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            const headRef = pr.head.ref;
+            const baseRef = pr.base.ref;
+
+            // Fail the workflow if branch does NOT match test/* → main
+            if (baseRef !== 'main' || !headRef.startsWith('test/')) {
+              core.setFailed(`This release workflow is only supported for test/* → main`);
+            }
+            core.setOutput('sha', pr.head.sha);
+            core.setOutput('head_ref', headRef);
+            core.setOutput('base_ref', baseRef);
+
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 2
+
+      - name: Detect directory changes
+        id: changed-files
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 #v47.0.0
+        with:
+          files: scaffold/**/*.py
+
+      - name: Release all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          sha="${{ steps.pr.outputs.sha }}"
+          head_ref="${{ steps.pr.outputs.head_ref }}"
+          dispatched_at="${head_ref##*-}" 
+          for file in ${ALL_CHANGED_FILES}; do      
+            filename=$(basename "$file" .py)
+            IFS='-' read -r report_id report_version <<< "$filename"
+            release=${report_id}-${report_version}-${dispatched_at}-${sha:0:7}.py
+            echo Releasing "$file" as "${ARTIFACT_BASE_URL}/${report_id}/${report_version}/codes/${release}"
+          done
