@@ -1,0 +1,20 @@
+name: Release Code (Dev)
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  get-pull-request:
+    if: github.event.issue.pull_request && github.event.comment.body == 'release'
+    uses: ./.github/workflows/template_pull_request_info.yaml
+    with:
+      pull_request_number: ${{ github.event.issue.number }}
+
+  release:
+    needs: get-pull-request
+    uses: ./.github/workflows/template_release.yaml
+    with:
+      base_sha: ${{ needs.get-pull-request.outputs.base_sha }}
+      head_sha: ${{ needs.get-pull-request.outputs.head_sha }}
+      dispatched_at: ${{ needs.get-pull-request.outputs.dispatched_at }}
+      artifactory_url: s3://bucket_dev

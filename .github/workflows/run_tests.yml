@@ -1,0 +1,48 @@
+name: Run tests
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'scaffold/**'
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  # Also requires Actions permissions (https://github.com/waiyan1612/playground-ghaction/settings/actions) to "Allow GitHub Actions to create and approve pull requests"
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 #v47.0.0
+        with:
+          json: true
+
+      - name: Download test files
+        run: python scripts/setup_tests.py
+
+      - name: Run tests
+        id: test
+        run: |
+          echo "Modified files: ${{ steps.changed.outputs.modified_files }}"
+          echo "Added files: ${{ steps.changed.outputs.added_files }}"
+          echo "Deleted files: ${{ steps.changed.outputs.deleted_files }}"
+          echo "TODO: RUN TESTS" > test_results.md
+          { echo 'results<<EOF'; cat test_results.md; echo 'EOF'; } >> "$GITHUB_OUTPUT"
+
+      - name: Comment results
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 #v5.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.test.outputs.results }}

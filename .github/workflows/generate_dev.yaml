@@ -1,0 +1,32 @@
+name: Generate Code (Dev)
+on:
+  workflow_dispatch:
+    inputs:
+      report_id:
+        description: 'Business partner report ID'
+        required: true
+        type: string
+      report_version:
+        description: 'Business partner report version'
+        required: true
+        type: string
+      dispatched_at:
+        description: 'Dispatch timestamp in yyyyMMdd_HHmm'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    uses: ./.github/workflows/template_generate_code_create_pr.yaml
+    with:
+      report_id: ${{ github.event.inputs.report_id }}
+      report_version: ${{ github.event.inputs.report_version }}
+      dispatched_at: ${{ github.event.inputs.dispatched_at }}
+      artifact_base_url: s3://bucket_dev
+      pr_draft: true
+      pr_branch_prefix: test/
+      pr_title_prefix: "[Test] "
