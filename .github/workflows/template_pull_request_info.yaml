@@ -13,18 +13,6 @@ on:
       head_sha:
         description: "Head commit SHA"
         value: ${{ jobs.extract.outputs.head_sha }}
-      head_ref:
-        description: "Head Ref"
-        value: ${{ jobs.extract.outputs.head_ref }}
-      report_id:
-        description: "Extracted report ID from branch name"
-        value: ${{ jobs.extract.outputs.report_id }}
-      report_version:
-        description: "Extracted report version from branch name"
-        value: ${{ jobs.extract.outputs.report_version }}
-      dispatched_at:
-        description: "Extracted dispatched_at value from branch name"
-        value: ${{ jobs.extract.outputs.dispatched_at }}
 
 jobs:
   extract:
@@ -32,10 +20,6 @@ jobs:
     outputs:
       base_sha: ${{ steps.pr.outputs.base_sha }}
       head_sha: ${{ steps.pr.outputs.head_sha }}
-      head_ref: ${{ steps.pr.outputs.head_ref }}
-      report_id: ${{ steps.pr.outputs.report_id }}
-      report_version: ${{ steps.pr.outputs.report_version }}
-      dispatched_at: ${{ steps.pr.outputs.dispatched_at }}
     steps:
       - name: Get pull request
         id: pr
@@ -49,19 +33,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: pull_number
             });
-            const headRef = pr.head.ref;
-            const match = headRef.match(/^(?:test\/)?([A-Za-z0-9]+)-(v\d+)-([0-9_]+)$/);
-            if (!match) {
-              core.setFailed(`head_ref "${headRef}" doesn't match expected format {report_id}-{report_version}-{dispatched_at}`);
-            }
-            const [, reportId, reportVersion, dispatchedAt] = match;
             const outputs = {
               base_sha: pr.base.sha,
               head_sha: pr.head.sha,
-              head_ref: headRef,
-              report_id: reportId,
-              report_version: reportVersion,
-              dispatched_at: dispatchedAt
             };
             for (const [key, value] of Object.entries(outputs)) {
               core.setOutput(key, value);

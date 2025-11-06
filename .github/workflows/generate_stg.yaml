@@ -2,16 +2,8 @@ name: Generate Code (Stg)
 on:
   workflow_dispatch:
     inputs:
-      report_id:
-        description: 'Business partner report ID'
-        required: true
-        type: string
-      report_version:
-        description: 'Business partner report version'
-        required: true
-        type: string
-      dispatched_at:
-        description: 'Dispatch timestamp in yyyyMMdd_HHmm'
+      config_id:
+        description: 'Business partner config ID'
         required: true
         type: string
 
@@ -23,7 +15,5 @@ jobs:
   generate:
     uses: ./.github/workflows/template_generate_code_create_pr.yaml
     with:
-      report_id: ${{ github.event.inputs.report_id }}
-      report_version: ${{ github.event.inputs.report_version }}
-      dispatched_at: ${{ github.event.inputs.dispatched_at }}
+      config_id: ${{ github.event.inputs.config_id }}
       artifact_base_url: s3://bucket_stg

@@ -14,10 +14,6 @@ on:
         description: 'Base URL for the deployment target'
         required: true
         type: string
-      dispatched_at:
-        description: 'Dispatched at'
-        required: true
-        type: string
 
 jobs:
   release-changes:
@@ -40,9 +36,8 @@ jobs:
       - name: Release to ${{ inputs.artifactory_url }}
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            IFS='-' read -r REPORT_ID REPORT_VERSION <<< "$(basename "$file" .py)"
-            FILENAME="${REPORT_ID}-${REPORT_VERSION}-${{ inputs.dispatched_at }}-$(echo ${{ inputs.head_sha }} | cut -c1-7).py"
-            DEST_PATH="${{ inputs.artifactory_url }}/${REPORT_ID}/${REPORT_VERSION}/codes/${FILENAME}"
+            IFS='-' read -r REPORT_ID REPORT_VERSION TIMESTAMP <<< "$(basename "$file" .py)"
+            DEST_PATH="${{ inputs.artifactory_url }}/${REPORT_ID}/${REPORT_VERSION}/${TIMESTAMP}/$file"
             echo Releasing "$file" to "$DEST_PATH"
-            mkdir -p "$(dirname "/tmp/$file")" && cp "$file" "/tmp/$FILENAME"
+            mkdir -p "$(dirname "/tmp/$file")" && cp "$file" "/tmp/$file"
           done
