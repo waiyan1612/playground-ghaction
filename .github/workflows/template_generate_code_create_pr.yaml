@@ -2,16 +2,8 @@ name: '[Template] Generate Code'
 on:
   workflow_call:
     inputs:
-      report_id:
-        description: 'Business partner report ID'
-        required: true
-        type: string
-      report_version:
-        description: 'Business partner report version'
-        required: true
-        type: string
-      dispatched_at:
-        description: 'Dispatch timestamp in yyyyMMdd_HHmm'
+      config_id:
+        description: 'Business partner config ID'
         required: true
         type: string
       artifact_base_url:
@@ -39,8 +31,7 @@ permissions:
   pull-requests: write
 
 env:
-  REPORT_ID_WITH_VER: "${{ inputs['report_id'] }}-${{ inputs['report_version'] }}"
-  DISPATCH_ID: "${{ inputs['report_id'] }}-${{ inputs['report_version'] }}-${{ inputs['dispatched_at'] }}"
+  CONFIG_ID: "${{ inputs['config_id'] }}"
 
 jobs:
   generate:
@@ -55,13 +46,13 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Run generator for ${{ matrix.variant }}
-        run: python scripts/generator.py > "$DISPATCH_ID-${{ matrix.variant }}.py"
+        run: python scripts/generator.py > "$CONFIG_ID-${{ matrix.variant }}.py"
 
       - name: Upload all variants
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.DISPATCH_ID }}-${{ matrix.variant }}
-          path: "${{ env.DISPATCH_ID }}-${{ matrix.variant }}.py"
+          name: ${{ env.CONFIG_ID }}-${{ matrix.variant }}
+          path: "${{ env.CONFIG_ID }}-${{ matrix.variant }}.py"
           retention-days: 7
 
   score:
@@ -94,13 +85,13 @@ jobs:
           # cat test_results.md >> $GITHUB_STEP_SUMMARY
 
       - name: Rename file
-        run: mv "${{ steps.test.outputs.selected }}" "./artifacts/$REPORT_ID_WITH_VER.py"
+        run: mv "${{ steps.test.outputs.selected }}" "./artifacts/$CONFIG_ID.py"
 
       - name: Upload best variant
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.REPORT_ID_WITH_VER }}
-          path: "artifacts/${{ env.REPORT_ID_WITH_VER }}.py"
+          name: ${{ env.CONFIG_ID }}
+          path: "artifacts/${{ env.CONFIG_ID }}.py"
           retention-days: 7
 
   create-pull-request:
@@ -117,7 +108,7 @@ jobs:
       - name: Download best variant
         uses: actions/download-artifact@v5
         with:
-          name: ${{ env.REPORT_ID_WITH_VER }}
+          name: ${{ env.CONFIG_ID }}
           path: scaffold/${{ inputs['report_id'] }}/
 
       - name: Create pull request
@@ -127,11 +118,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           sign-commits: true
           add-paths: scaffold/
-          commit-message: Add ${{env.REPORT_ID_WITH_VER}}.py
-          branch: ${{ inputs['pr_branch_prefix'] }}${{env.DISPATCH_ID}}
-          title: ${{ inputs['pr_title_prefix'] }}Add ${{env.REPORT_ID_WITH_VER}}
+          commit-message: Add ${{env.CONFIG_ID}}.py
+          branch: ${{ inputs['pr_branch_prefix'] }}${{env.CONFIG_ID}}
+          title: ${{ inputs['pr_title_prefix'] }}Add ${{env.CONFIG_ID}}
           body: | 
-            Add ${{env.REPORT_ID_WITH_VER}}.py
+            Add ${{env.CONFIG_ID}}.py
             ---
             ${{ needs.score.outputs.test-results }}"
             ---
