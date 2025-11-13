@@ -1,31 +1,22 @@
 name: Release Code (Stg & Prd)
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
     paths:
       - 'scaffold/**/*.py'
 
 jobs:
-  get-pull-request:
-    if: github.event.pull_request.merged == true
-    uses: ./.github/workflows/template_pull_request_info.yaml
-    with:
-      pull_request_number: ${{ github.event.pull_request.number }}
-
   release-stg:
-    needs: get-pull-request
     uses: ./.github/workflows/template_release.yaml
     with:
-      base_sha: ${{ needs.get-pull-request.outputs.base_sha }}
-      head_sha: ${{ needs.get-pull-request.outputs.head_sha }}
+      base_sha: ${{ github.event.before }}
+      head_sha: ${{ github.sha }}
       artifactory_url: s3://bucket_stg
 
   release-prod:
-    needs: get-pull-request
     uses: ./.github/workflows/template_release.yaml
     with:
-      base_sha: ${{ needs.get-pull-request.outputs.base_sha }}
-      head_sha: ${{ needs.get-pull-request.outputs.head_sha }}
+      base_sha: ${{ github.event.before }}
+      head_sha: ${{ github.sha }}
       artifactory_url: s3://bucket_prod
